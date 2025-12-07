@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotaru</title>
+    <style>
+        :root {
+            --text-muted: #777777;
+            --rating-gold: #ffb400;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .product-wrapper {
+            display: flex;
+            gap: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px; /* Opcional */
+        }
+
+        @media (max-width: 768px) {
+            .product-wrapper {
+                flex-direction: column;
+            }
+        }
+
+        /* --- GALERÍA DE IMÁGENES (IZQUIERDA) --- */
+        .gallery-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 500px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnails {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .thumb {
+            width: 70px;
+            height: 70px;
+            background-color: #eee;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .thumb.active {
+            border-color: #333;
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumb-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* --- DETALLES DEL PRODUCTO (DERECHA) --- */
+        .details-section {
+            flex: 1;
+            padding-left: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .read-more {
+            color: #333;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .stars { color: #f59e0b; }
+
+        .price-container {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .current-price {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .old-price {
+            font-size: 16px;
+            text-decoration: line-through;
+            color: #e11d48; /* Color rosado/rojo */
+            font-weight: 500;
+        }
+
+        /* SELECCIÓN DE OPCIONES */
+        .option-group {
+            margin-bottom: 20px;
+        }
+
+        .option-label {
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: block;
+            color: #333;
+        }
+
+        /* Cantidad */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .quantity-btn:hover {
+            border-color: #999;
+            background-color: #f5f5f5;
+        }
+
+        .quantity-input {
+            width: 60px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            /* Remove default number input spinner */
+        }
+
+        /* Remove number input spinner for all browsers */
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .quantity-input[type=number] {
+            appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        .quantity-input:focus {
+            outline: none;
+            border-color: #3e7c59;
+        }
+
+        /* BOTONES DE ACCIÓN */
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3e7c59; /* Verde */
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            border: 1px solid #ddd;
+            color: #3e7c59;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        .extra-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .action-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        /* --- SECCIÓN DE RESEÑAS (ABAJO) --- */
+        .bottom-section {
+            margin-top: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 30px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 25px;
+        }
+
+        .tab {
+            padding-bottom: 10px;
+            cursor: pointer;
+            color: #777;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #3e7c59;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #3e7c59;
+        }
+
+        .reviews-container {
+            display: flex;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .reviews-container {
+                flex-direction: column-reverse;
+            }
+        }
+
+        /* Lista de reseñas */
+        .reviews-list {
+            flex: 2;
+        }
+
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .reviews-header h3 { font-size: 18px; }
+
+        .sort-select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .review-item {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .reviewer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .reviewer-name { font-weight: 600; font-size: 14px; }
+
+        .review-text {
+            font-size: 14px;
+            color: #444;
+            margin-top: 8px;
+        }
+
+        .review-actions {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #3e7c59;
+            font-weight: 600;
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Resumen de Ratings */
+        .ratings-card {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            height: fit-content;
+        }
+
+        .big-rating {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #d4a045; /* Color dorado */
+            border-radius: 4px;
+        }
+
+        .main-header {
+            border-bottom: 1px solid #eee;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .main-header h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .main-header nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .main-header nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .main-header nav a:hover {
+            text-decoration: underline;
+        }
+
+        .main-header button {
+            padding: 10px 20px;
+            background-color: #3e7c59;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .main-header button:hover {
+            background-color: #335d45;
+        }
+
+        .main-header nav button {
+            display: none;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-header .container {
+                padding: 12px 15px;
+            }
+
+            .main-header h2 {
+                font-size: 20px;
+            }
+
+            .main-header nav {
+                display: none;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: white;
+                border-bottom: 1px solid #eee;
+                padding: 15px;
+                gap: 10px;
+                z-index: 999;
+            }
+
+            .main-header nav.active {
+                display: flex;
+            }
+
+            .main-header nav a {
+                padding: 10px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .main-header button {
+                display: none;
+            }
+
+            .main-header nav button {
+                display: block;
+                width: 100%;
+                padding: 12px 0;
+                margin-top: 10px;
+                border-top: 1px solid #f0f0f0;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        .rating-score {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            height: fit-content;
+        }
+
+        .star {
+            color: var(--rating-gold);
+            font-size: 14px;
+        }
+
+        .rating-score-big {
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .rating-stars-row {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating-summary {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .rating-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .rating-row {
+            display: grid;
+            grid-template-columns: 20px 1fr 28px;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .bar-track {
+            height: 6px;
+            border-radius: 999px;
+            background: #edf0f5;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--rating-gold);
+            width: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h2>HOTARU</h2>
+            <nav id="navMenu">
+                <a href="#">ABOUT US</a>
+                <a href="#">CONTACT</a>
+                <button>SHOP</button>
+            </nav>
+            <button>SHOP</button>
+            <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+<div class="container">
+    
+
+    <main class="product-wrapper">
+        <section class="gallery-section">
+            <div class="main-image" id="mainImage">
+                <img src="product1.jpeg" alt="Main Product">
+            </div>
+            <div class="thumbnails">
+                <div class="thumb active" onclick="changeImage(this, '8da399')">
+                    <img src="product1.jpeg" alt="thumb">
+                </div>
+            </div>
+        </section>
+
+        <section class="details-section">
+            <h1>Hotaru Lamp</h1>
+            
+            <p class="description" id="descriptionText">
+                Hotaru is a minimalistic bedside lamp designed to simplify daily routines and improve sleep.
+                <br><br>
+                It combines adjustable lighting, a wireless phone charger, a Bluetooth speaker, smart alarms, sleep tracking... <span class="read-more" id="readMoreBtn" onclick="toggleReadMore()">Read more</span>
+            </p>
+
+            <div class="stats">
+                <span><strong>20</strong> Sold</span>
+                <span>•</span>
+                <span class="stars">★ 5.0</span>
+                <span>(3 reviews)</span>
+            </div>
+
+            <div class="price-container">
+                <span class="current-price">$28,00</span>
+                <span class="old-price">$50,00</span>
+            </div>
+
+            <div class="option-group">
+                <label class="option-label">Quantity</label>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" onclick="decreaseQuantity()">−</button>
+                    <input type="number" class="quantity-input" id="quantityInput" value="1" min="1" max="999">
+                    <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="addToCart()">+ Add to Cart</button>
+                <button class="btn btn-secondary">Buy this Item</button>
+            </div>
+        </section>
+    </main>
+
+    <section class="bottom-section">
+        <div class="tabs">
+            <div class="tab active">Reviews</div>
+        </div>
+
+        <div class="reviews-container">
+            <div class="reviews-list">
+                <div class="reviews-header">
+                    <h3>Reviews <small style="color:#777; font-weight:400;">Showing 3 from 3 reviews</small></h3>
+                    <select class="sort-select">
+                        <option>Latest</option>
+                        <option>Highest Rating</option>
+                    </select>
+                </div>
+
+                <div class="review-item">
+                    <div class="reviewer">
+                        <img src="https://placehold.co/32x32/ccc/666?text=SJ" class="avatar" alt="User">
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Sarah Johnson</div>
+                            <div class="stars">★★★★★</div>
+                        </div>
+                    </div>
+                    <p class="review-text">
+                        The Hotaru lamp is absolutely amazing! The adjustable lighting is perfect for my bedroom. It helps me fall asleep faster and the quality of light is so soft and natural. Highly recommend!
+                    </p>
+                    
+                </div>
+                <div class="review-item">
+                    <div class="reviewer">
+                        <img src="https://placehold.co/32x32/ccc/666?text=MB" class="avatar" alt="User">
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Marcus Brown</div>
+                            <div class="stars">★★★★★</div>
+                        </div>
+                    </div>
+                    <p class="review-text">
+                        Great lamp with excellent features. The wireless phone charger and Bluetooth speaker are super convenient. The only minor issue is that it takes a bit of time to learn all the settings, but once you get used to it, it's perfect for your nightstand.
+                    </p>
+                </div>
+                <div class="review-item">
+                    <div class="reviewer">
+                        <img src="https://placehold.co/32x32/ccc/666?text=EC" class="avatar" alt="User">
+                        <div class="reviewer-info">
+                            <div class="reviewer-name">Emma Chen</div>
+                            <div class="stars">★★★★★</div>
+                        </div>
+                    </div>
+                    <p class="review-text">
+                        Worth every penny! I love how the Hotaru lamp creates the perfect ambiance for relaxing before bed. The sleep tracking feature is really helpful, and the design looks so sleek and modern on my nightstand. Best purchase ever!
+                    </p>
+                </div>
+
+            </div>
+            <section class="ratings-card">
+                <div class="rating-score">
+                <div>
+                    <div class="rating-score-big">5.0</div>
+                    <div class="rating-stars-row">
+                    <span class="star">★</span><span class="star">★</span
+                    ><span class="star">★</span><span class="star">★</span
+                    ><span class="star">★</span>
+                    </div>
+                </div>
+                <div class="rating-summary">
+                    <div>3 reviews</div>
+                    <div>Based on client satisfaction</div>
+                </div>
+                </div>
+
+                <div class="rating-bars">
+                    <div class="rating-row">
+                        <span>5</span>
+                        <div class="bar-track">
+                        <div class="bar-fill" style="width: 100%;"></div>
+                        </div>
+                        <span>3</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>4</span>
+                        <div class="bar-track">
+                        <div class="bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <span>0</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>3</span>
+                        <div class="bar-track">
+                        <div class="bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <span>0</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>2</span>
+                        <div class="bar-track">
+                        <div class="bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <span>0</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>1</span>
+                        <div class="bar-track">
+                        <div class="bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <span>0</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Toggle Mobile Menu
+    function toggleMenu() {
+        const navMenu = document.getElementById('navMenu');
+        const hamburger = document.getElementById('hamburger');
+        navMenu.classList.toggle('active');
+        hamburger.classList.toggle('active');
+    }
+
+    // Cambiar Imagen Principal
+    function changeImage(element, colorHex) {
+        // Remover clase activa de todos
+        document.querySelectorAll('.thumb').forEach(thumb => thumb.classList.remove('active'));
+        // Agregar a este
+        element.classList.add('active');
+        
+        // Simular cambio de imagen principal
+        const mainImg = document.querySelector('#mainImage img');
+        mainImg.src = `https://placehold.co/500x600/${colorHex}/white?text=Vista+Seleccionada`;
+    }
+
+    // State for read more toggle
+    let isExpanded = false;
+    
+    // Expandir descripción
+    function toggleReadMore() {
+        const descriptionEl = document.getElementById('descriptionText');
+        const readMoreBtn = document.getElementById('readMoreBtn');
+        const shortText = 'Hotaru is a minimalistic bedside lamp designed to simplify daily routines and improve sleep.<br><br>It combines adjustable lighting, a wireless phone charger, a Bluetooth speaker, smart alarms, sleep tracking...<span class="read-more" id="readMoreBtn" onclick="toggleReadMore()">Read more</span>';
+        const fullText = 'Hotaru is a minimalistic bedside lamp designed to simplify daily routines and improve sleep.<br><br>It combines adjustable lighting, a wireless phone charger, a Bluetooth speaker, smart alarms, sleep tracking and optional features like star projection and aromatherapy into one organised device.<br><br>Its adjustable light adapts to the time of day to support natural sleep patterns, while the wireless charger and touch controls make everyday use effortless. The built-in speaker can play music, alarms, white noise, and relaxing sounds, and the smart alarm wakes users gently with gradual light and audio. Night-friendly features include a soft tap-activated light and automatic sleep mode.<br><br>As a product, Hotaru is a durable, hybrid consumer electronic device that merges hardware with smart software. It belongs to the lifestyle and wellness segment, offering simplicity, convenience, and daily usability. Designed mainly for bedrooms or workspaces, it supports users throughout the day—helping them wake up smoothly, work comfortably, and relax before sleep.<br><br>Overall, Hotaru is a smart, all-in-one bedside companion that enhances comfort, organisation, and emotional wellbeing through light, sound, scent, and intuitive technology. <span class="read-more" id="readMoreBtn" onclick="toggleReadMore()">Read less</span>';
+        
+        if (!isExpanded) {
+            descriptionEl.innerHTML = fullText;
+            readMoreBtn.innerText = 'Read less';
+            isExpanded = true;
+        } else {
+            descriptionEl.innerHTML = shortText;
+            readMoreBtn.innerText = 'Read more';
+            isExpanded = false;
+        }
+    }
+
+    // Aumentar Cantidad
+    function increaseQuantity() {
+        const quantityInput = document.getElementById('quantityInput');
+        quantityInput.value = parseInt(quantityInput.value) + 1;
+    }
+
+    // Disminuir Cantidad
+    function decreaseQuantity() {
+        const quantityInput = document.getElementById('quantityInput');
+        if (parseInt(quantityInput.value) > 1) {
+            quantityInput.value = parseInt(quantityInput.value) - 1;
+        }
+    }
+
+    // Botón Carrito
+    function addToCart() {
+        const quantity = document.getElementById('quantityInput').value;
+        alert(`Added to Cart:\nHotaru Lamp\nQuantity: ${quantity}`);
+    }
+</script>
+
+</body>
+</html>
